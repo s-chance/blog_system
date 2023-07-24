@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header"  th:content="${_csrf.headerName}"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1,shrink-to-fit=no">
+    <title>用户注册界面</title>
+    <link th:href="@{/user/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/user/css/signin.css}" rel="stylesheet">
+    <script th:src="@{/assets/js/jquery.min.js}"></script>
+</head>
+<body class="text-center">
+
+<!--  用户登录form表单 -->
+<form class="form-signin" th:action="@{/register}" method="post">
+    <div>
+        <input type="hidden" name="url" th:value="${url}">
+    </div>
+    <a th:href="@{/}">
+    <img class="mb-4" th:src="@{/user/img/login.png}" width="72" height="72">
+    <h1 class="h3 mb-3 font-weight-normal" >~欢迎注册博客~</h1>
+    </a>
+    <span th:if="${errTel}"  id="errMsg"  style="color: #ff0000;" >[[${errTel}]]</span>
+    <input id="username" type="text" class="form-control"
+           placeholder="请输入邮箱" name="username" required="" autofocus="">
+    <input type="password" class="form-control"
+           placeholder="密码" name="password" required="">
+    <span th:if="${errCheckCode}"  id="smsErr"  style="color: #ff0000;" >[[${errCheckCode}]]</span>
+	<input type="text" class="form-control"
+           placeholder="验证码" name="checkCode" required="">
+    <button id="span1" class="btn btn-block" onclick="sendSms()">发送验证码</button>
+    <button class="btn btn-lg btn-primary btn-block" type="submit" >注册</button>
+</form>
+<script th:inline="javascript">
+    //邮箱输入框添加失去焦点事件
+    $("#username").blur(function (){
+        //验证邮箱是否合法
+        //(1)邮箱正则表达式对象
+        var regx = new RegExp("^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$");
+        //(2)获取用户输入的邮箱
+        var tel = $("#username").val();
+        //(3)判断
+        var b = regx.test(tel);
+        if(!b){
+            //不合法,提示
+            alert("邮箱不合法,请重新输入!");
+            //清空输入框
+            $("#username").val("")
+        }
+    });
+
+    //发送验证码
+    function sendSms(){
+        $("#span1").attr("disabled","true");
+        var time = 10;
+        var timer = setInterval(function (){
+            if(time<0){time = 0;}
+            $("#span1").text("("+ (--time) +"秒)");
+            $("#span1").css("color","red");
+        },1000);
+        setTimeout(function (){
+            $("#span1").attr("disabled",false);
+            $("#span1").text("发送验证码");
+            $("#span1").css("color","black");
+            clearInterval(timer);
+        },10000);
+        var u = [[@{/sendSms}]];
+        var header = $("meta[name='_csrf_header']").attr("content");
+        var token =$("meta[name='_csrf']").attr("content");
+        // alert("header="+header);
+        // alert("token="+token);
+        //获取手机号
+        var tel = $("#username").val();
+        $.ajax({
+            type: "post",
+            url: u,
+            data: {tel:tel},
+            dataType: "json",
+            beforeSend: function (xhr){
+                xhr.setRequestHeader(header, token);
+            },
+            success: function (result){
+                if (result && result.success) {
+                    window.alert("发送成功!");
+                    // window.location.reload();
+                } else {
+                    window.alert("发送失败")
+                    if (result.msg) {
+                        alert(result.msg);
+                    }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

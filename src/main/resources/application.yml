@@ -1,0 +1,25 @@
+server:
+  port: 80
+spring:
+  profiles:
+    active: jdbc,redis,mail
+  # 设置thymeleaf
+  thymeleaf:
+    cache: false
+    encoding: UTF-8
+    mode: html5
+    prefix: classpath:/templates/
+    suffix: .html
+  # 配置国际化文件基础名
+  messages:
+    basename: i18n.logo
+# Mybatis配置
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true # 开启驼峰匹配映射
+  mapper-locations: classpath:/mapper/*.xml # Mybatis中sql映射文件路径
+  type-aliases-package: com.entropy.entity # 指定实体类别名路径
+
+# 设置cookie有效时间
+COOKIE:
+  VALIDITY: 259200
